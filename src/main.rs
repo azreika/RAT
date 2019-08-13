@@ -19,5 +19,7 @@ mod tests {
         let disj = Box::new(Or(conj, r));
 
         let not = Box::new(Not(disj));
+        let false_val = Box::new(Constant(false));
+        let res = Box::new(Or(not, false_val));
     }
 }

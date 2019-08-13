@@ -5,6 +5,7 @@ pub enum Formula<'a> {
     Or(Box<Formula<'a>>, Box<Formula<'a>>),
     Not(Box<Formula<'a>>),
     Var(&'a str),
+    Constant(bool),
 }
 
 impl<'a> fmt::Display for Formula<'a> {
@@ -14,6 +15,10 @@ impl<'a> fmt::Display for Formula<'a> {
             Formula::Not(ref sub) => write!(f, "¬{}", sub),
             Formula::Or(ref left, ref right) => write!(f, "({} ∨ {})", left, right),
             Formula::Var(ref name) => write!(f, "{}", name),
+            Formula::Constant(ref val) => match val {
+                true => write!(f, "⊤"),
+                false => write!(f, "⊥"),
+            },
         }
     }
 }
