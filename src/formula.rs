@@ -1,14 +1,14 @@
 use std::fmt;
 
-pub enum Formula<'a> {
-    And(Box<Formula<'a>>, Box<Formula<'a>>),
-    Or(Box<Formula<'a>>, Box<Formula<'a>>),
-    Not(Box<Formula<'a>>),
-    Var(&'a str),
+pub enum Formula {
+    And(Box<Formula>, Box<Formula>),
+    Or(Box<Formula>, Box<Formula>),
+    Not(Box<Formula>),
+    Var(String),
     Constant(bool),
 }
 
-impl<'a> fmt::Display for Formula<'a> {
+impl fmt::Display for Formula {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Formula::And(ref left, ref right) => write!(f, "({} ∧ {})", left, right),
@@ -23,10 +23,9 @@ impl<'a> fmt::Display for Formula<'a> {
     }
 }
 
-impl<'a> Formula<'a> {
+impl Formula {
     pub fn get_cnf(&self) -> Formula {
-        // TODO
-        Formula::Constant(false)
+        Formula::Var(format!("x:{}", self.count_nontrivial_subformulas()))
     }
 
     pub fn count_nontrivial_subformulas(&self) -> i32 {

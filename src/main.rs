@@ -11,9 +11,9 @@ mod tests {
 
     #[test]
     fn simple_construct() {
-        let p = Box::new(Var("p"));
-        let q = Box::new(Var("q"));
-        let r = Box::new(Var("r"));
+        let p = Box::new(Var("p".to_string()));
+        let q = Box::new(Var("q".to_string()));
+        let r = Box::new(Var("r".to_string()));
 
         let conj = Box::new(And(p, q));
         let disj = Box::new(Or(conj, r));
