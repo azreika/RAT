@@ -23,6 +23,21 @@ impl fmt::Display for Formula {
     }
 }
 
+impl fmt::Debug for Formula {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Formula::And(ref left, ref right) => write!(f, "({} ∧ {})", left, right),
+            Formula::Not(ref sub) => write!(f, "¬{}", sub),
+            Formula::Or(ref left, ref right) => write!(f, "({} ∨ {})", left, right),
+            Formula::Var(ref name) => write!(f, "{}", name),
+            Formula::Constant(ref val) => match val {
+                true => write!(f, "⊤"),
+                false => write!(f, "⊥"),
+            },
+        }
+    }
+}
+
 impl Formula {
     pub fn get_cnf(&self) -> Formula {
         Formula::Var(format!("x:{}", self.count_nontrivial_subformulas()))
