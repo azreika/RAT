@@ -8,6 +8,55 @@ pub enum Formula {
     Constant(bool),
 }
 
+#[derive(Debug)]
+pub struct Conjunction {
+    disjunctions: Vec<Disjunction>,
+}
+
+impl Conjunction {
+    pub fn new() -> Conjunction {
+        Conjunction {
+            disjunctions: Vec::new(),
+        }
+    }
+
+    pub fn add_disjunction(&mut self, disjunction: Disjunction) {
+        self.disjunctions.push(disjunction);
+    }
+}
+
+#[derive(Debug)]
+pub struct Disjunction {
+    literals: Vec<Literal>,
+}
+
+impl Disjunction {
+    pub fn new() -> Disjunction {
+        Disjunction {
+            literals: Vec::new(),
+        }
+    }
+
+    pub fn add_literal(&mut self, literal: Literal) {
+        self.literals.push(literal);
+    }
+}
+
+#[derive(Debug)]
+pub struct Literal {
+    name: String,
+    negated: bool,
+}
+
+impl Literal {
+    pub fn new(name: String, negated: bool) -> Literal {
+        Literal {
+            name: name,
+            negated: negated,
+        }
+    }
+}
+
 impl fmt::Display for Formula {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -43,9 +92,13 @@ fn gen_var(idx: usize) -> String {
 }
 
 impl Formula {
-    pub fn get_cnf(&self) -> Formula {
-        Formula::Var(gen_var(0))
-        // Formula::Var(format!("x:{}", self.count_nontrivial_subformulas()))
+    pub fn get_cnf(&self) -> Conjunction {
+        let subformulas = self.reduce(0);
+        let mut conj = Conjunction::new();
+        let mut disj = Disjunction::new();
+        disj.add_literal(Literal::new("hello".to_string(), false));
+        conj.add_disjunction(disj);
+        conj
     }
 
     pub fn reduce(&self, idx: usize) -> Vec<(String, Formula)> {
