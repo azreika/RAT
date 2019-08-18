@@ -93,11 +93,38 @@ fn gen_var(idx: usize) -> String {
 
 impl Formula {
     pub fn get_cnf(&self) -> Conjunction {
-        let subformulas = self.reduce(0);
         let mut conj = Conjunction::new();
-        let mut disj = Disjunction::new();
-        disj.add_literal(Literal::new("hello".to_string(), false));
-        conj.add_disjunction(disj);
+
+        let subformulas = self.reduce(0);
+        for formula in subformulas.into_iter() {
+            match formula {
+                (ref var_name, Formula::Not(ref sub)) => {
+                    let mut disj = Disjunction::new();
+                    disj.add_literal(Literal::new("NOT-.".to_string(), true));
+                    conj.add_disjunction(disj);
+                },
+                (ref var_name, Formula::And(ref left, ref right)) => {
+                    let mut disj = Disjunction::new();
+                    disj.add_literal(Literal::new("AND-.".to_string(), false));
+                    conj.add_disjunction(disj);
+                },
+                (ref var_name, Formula::Or(ref left, ref right)) => {
+                    let mut disj = Disjunction::new();
+                    disj.add_literal(Literal::new("OR-.".to_string(), false));
+                    conj.add_disjunction(disj);
+                },
+                (ref var_name, Formula::Constant(ref val)) => {
+                    let mut disj = Disjunction::new();
+                    disj.add_literal(Literal::new("CONST-.".to_string(), false));
+                    conj.add_disjunction(disj);
+                },
+                (ref var_name, Formula::Var(ref name)) => {
+                    let mut disj = Disjunction::new();
+                    disj.add_literal(Literal::new("NAME-.".to_string(), false));
+                    conj.add_disjunction(disj);
+                }
+            }
+        }
         conj
     }
 
