@@ -1,4 +1,5 @@
 use std::fmt;
+use crate::cnf;
 
 pub enum Formula {
     And(Box<Formula>, Box<Formula>),
@@ -6,52 +7,6 @@ pub enum Formula {
     Not(Box<Formula>),
     Var(String),
     Constant(bool),
-}
-
-pub struct Conjunction {
-    disjunctions: Vec<Disjunction>,
-}
-
-impl Conjunction {
-    pub fn new() -> Conjunction {
-        Conjunction {
-            disjunctions: Vec::new(),
-        }
-    }
-
-    pub fn add_disjunction(&mut self, disjunction: Disjunction) {
-        self.disjunctions.push(disjunction);
-    }
-}
-
-pub struct Disjunction {
-    literals: Vec<Literal>,
-}
-
-impl Disjunction {
-    pub fn new() -> Disjunction {
-        Disjunction {
-            literals: Vec::new(),
-        }
-    }
-
-    pub fn add_literal(&mut self, literal: Literal) {
-        self.literals.push(literal);
-    }
-}
-
-pub struct Literal {
-    name: String,
-    negated: bool,
-}
-
-impl Literal {
-    pub fn new(name: String, negated: bool) -> Literal {
-        Literal {
-            name: name,
-            negated: negated,
-        }
-    }
 }
 
 impl fmt::Display for Formula {
@@ -84,64 +39,27 @@ impl fmt::Debug for Formula {
     }
 }
 
-impl fmt::Debug for Conjunction {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str("(")?;
-        let mut delim = "";
-        for disjunction in self.disjunctions.iter() {
-            f.write_str(delim)?;
-            write!(f, "{:?}", disjunction)?;
-            delim = " ∧ ";
-        }
-        f.write_str(")")?;
-        Ok(())
-    }
-}
-
-impl fmt::Debug for Disjunction {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str("(")?;
-        let mut delim = "";
-        for literal in self.literals.iter() {
-            f.write_str(delim)?;
-            write!(f, "{:?}", literal)?;
-            delim = " ∨ ";
-        }
-        f.write_str(")")?;
-        Ok(())
-    }
-}
-
-impl fmt::Debug for Literal {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        if self.negated {
-            f.write_str("¬")?;
-        }
-        write!(f, "{}", self.name)
-    }
-}
-
 fn gen_var(idx: usize) -> String {
     format!("@var{}", idx)
 }
 
 impl Formula {
-    pub fn get_cnf(&self) -> Conjunction {
-        let mut conj = Conjunction::new();
+    pub fn get_cnf(&self) -> cnf::Conjunction {
+        let mut conj = cnf::Conjunction::new();
 
         let subformulas = self.reduce(0);
         for formula in subformulas.into_iter() {
             match formula {
                 (var_name, Formula::Not(sub)) => {
                     if let Formula::Var(sub_name) = *sub {
-                        let mut disj1 = Disjunction::new();
-                        disj1.add_literal(Literal::new(var_name.clone(), false));
-                        disj1.add_literal(Literal::new(sub_name.clone(), false));
+                        let mut disj1 = cnf::Disjunction::new();
+                        disj1.add_literal(cnf::Literal::new(var_name.clone(), false));
+                        disj1.add_literal(cnf::Literal::new(sub_name.clone(), false));
                         conj.add_disjunction(disj1);
 
-                        let mut disj2 = Disjunction::new();
-                        disj2.add_literal(Literal::new(var_name.clone(), true));
-                        disj2.add_literal(Literal::new(sub_name.clone(), true));
+                        let mut disj2 = cnf::Disjunction::new();
+                        disj2.add_literal(cnf::Literal::new(var_name.clone(), true));
+                        disj2.add_literal(cnf::Literal::new(sub_name.clone(), true));
                         conj.add_disjunction(disj2);
                     } else {
                         panic!("oh no!");
@@ -150,20 +68,20 @@ impl Formula {
                 (var_name, Formula::And(left, right)) => {
                     if let Formula::Var(left_name) = *left {
                         if let Formula::Var(right_name) = *right {
-                            let mut disj1 = Disjunction::new();
-                            disj1.add_literal(Literal::new(var_name.clone(), true));
-                            disj1.add_literal(Literal::new(left_name.clone(), false));
+                            let mut disj1 = cnf::Disjunction::new();
+                            disj1.add_literal(cnf::Literal::new(var_name.clone(), true));
+                            disj1.add_literal(cnf::Literal::new(left_name.clone(), false));
                             conj.add_disjunction(disj1);
 
-                            let mut disj2 = Disjunction::new();
-                            disj2.add_literal(Literal::new(var_name.clone(), true));
-                            disj2.add_literal(Literal::new(right_name.clone(), false));
+                            let mut disj2 = cnf::Disjunction::new();
+                            disj2.add_literal(cnf::Literal::new(var_name.clone(), true));
+                            disj2.add_literal(cnf::Literal::new(right_name.clone(), false));
                             conj.add_disjunction(disj2);
 
-                            let mut disj3 = Disjunction::new();
-                            disj3.add_literal(Literal::new(var_name.clone(), false));
-                            disj3.add_literal(Literal::new(left_name.clone(), true));
-                            disj3.add_literal(Literal::new(right_name.clone(), true));
+                            let mut disj3 = cnf::Disjunction::new();
+                            disj3.add_literal(cnf::Literal::new(var_name.clone(), false));
+                            disj3.add_literal(cnf::Literal::new(left_name.clone(), true));
+                            disj3.add_literal(cnf::Literal::new(right_name.clone(), true));
                             conj.add_disjunction(disj3);
                         } else {
                             panic!("oh no!");
@@ -175,20 +93,20 @@ impl Formula {
                 (var_name, Formula::Or(left, right)) => {
                     if let Formula::Var(left_name) = *left {
                         if let Formula::Var(right_name) = *right {
-                            let mut disj1 = Disjunction::new();
-                            disj1.add_literal(Literal::new(var_name.clone(), false));
-                            disj1.add_literal(Literal::new(left_name.clone(), true));
+                            let mut disj1 = cnf::Disjunction::new();
+                            disj1.add_literal(cnf::Literal::new(var_name.clone(), false));
+                            disj1.add_literal(cnf::Literal::new(left_name.clone(), true));
                             conj.add_disjunction(disj1);
 
-                            let mut disj2 = Disjunction::new();
-                            disj2.add_literal(Literal::new(var_name.clone(), false));
-                            disj2.add_literal(Literal::new(right_name.clone(), true));
+                            let mut disj2 = cnf::Disjunction::new();
+                            disj2.add_literal(cnf::Literal::new(var_name.clone(), false));
+                            disj2.add_literal(cnf::Literal::new(right_name.clone(), true));
                             conj.add_disjunction(disj2);
 
-                            let mut disj3 = Disjunction::new();
-                            disj3.add_literal(Literal::new(var_name.clone(), true));
-                            disj3.add_literal(Literal::new(left_name.clone(), false));
-                            disj3.add_literal(Literal::new(right_name.clone(), false));
+                            let mut disj3 = cnf::Disjunction::new();
+                            disj3.add_literal(cnf::Literal::new(var_name.clone(), true));
+                            disj3.add_literal(cnf::Literal::new(left_name.clone(), false));
+                            disj3.add_literal(cnf::Literal::new(right_name.clone(), false));
                             conj.add_disjunction(disj3);
                         } else {
                             panic!("oh no!");
@@ -198,8 +116,8 @@ impl Formula {
                     }
                 },
                 (var_name, Formula::Constant(val)) => {
-                    let mut disj = Disjunction::new();
-                    disj.add_literal(Literal::new(var_name, val));
+                    let mut disj = cnf::Disjunction::new();
+                    disj.add_literal(cnf::Literal::new(var_name, val));
                     conj.add_disjunction(disj);
                 },
                 (ref _var_name, Formula::Var(ref _name)) => {
