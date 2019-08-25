@@ -132,30 +132,79 @@ impl Formula {
         let subformulas = self.reduce(0);
         for formula in subformulas.into_iter() {
             match formula {
-                (ref var_name, Formula::Not(ref sub)) => {
+                (var_name, Formula::Not(sub)) => {
+                    if let Formula::Var(sub_name) = *sub {
+                        let mut disj1 = Disjunction::new();
+                        disj1.add_literal(Literal::new(var_name.clone(), false));
+                        disj1.add_literal(Literal::new(sub_name.clone(), false));
+                        conj.add_disjunction(disj1);
+
+                        let mut disj2 = Disjunction::new();
+                        disj2.add_literal(Literal::new(var_name.clone(), true));
+                        disj2.add_literal(Literal::new(sub_name.clone(), true));
+                        conj.add_disjunction(disj2);
+                    } else {
+                        panic!("oh no!");
+                    }
+                },
+                (var_name, Formula::And(left, right)) => {
+                    if let Formula::Var(left_name) = *left {
+                        if let Formula::Var(right_name) = *right {
+                            let mut disj1 = Disjunction::new();
+                            disj1.add_literal(Literal::new(var_name.clone(), true));
+                            disj1.add_literal(Literal::new(left_name.clone(), false));
+                            conj.add_disjunction(disj1);
+
+                            let mut disj2 = Disjunction::new();
+                            disj2.add_literal(Literal::new(var_name.clone(), true));
+                            disj2.add_literal(Literal::new(right_name.clone(), false));
+                            conj.add_disjunction(disj2);
+
+                            let mut disj3 = Disjunction::new();
+                            disj3.add_literal(Literal::new(var_name.clone(), false));
+                            disj3.add_literal(Literal::new(left_name.clone(), true));
+                            disj3.add_literal(Literal::new(right_name.clone(), true));
+                            conj.add_disjunction(disj3);
+                        } else {
+                            panic!("oh no!");
+                        }
+                    } else{
+                        panic!("oh no!");
+                    }
+                },
+                (var_name, Formula::Or(left, right)) => {
+                    if let Formula::Var(left_name) = *left {
+                        if let Formula::Var(right_name) = *right {
+                            let mut disj1 = Disjunction::new();
+                            disj1.add_literal(Literal::new(var_name.clone(), false));
+                            disj1.add_literal(Literal::new(left_name.clone(), true));
+                            conj.add_disjunction(disj1);
+
+                            let mut disj2 = Disjunction::new();
+                            disj2.add_literal(Literal::new(var_name.clone(), false));
+                            disj2.add_literal(Literal::new(right_name.clone(), true));
+                            conj.add_disjunction(disj2);
+
+                            let mut disj3 = Disjunction::new();
+                            disj3.add_literal(Literal::new(var_name.clone(), true));
+                            disj3.add_literal(Literal::new(left_name.clone(), false));
+                            disj3.add_literal(Literal::new(right_name.clone(), false));
+                            conj.add_disjunction(disj3);
+                        } else {
+                            panic!("oh no!");
+                        }
+                    } else{
+                        panic!("oh no!");
+                    }
+                },
+                (var_name, Formula::Constant(val)) => {
                     let mut disj = Disjunction::new();
-                    disj.add_literal(Literal::new("NOT-.".to_string(), true));
+                    disj.add_literal(Literal::new(var_name, val));
                     conj.add_disjunction(disj);
                 },
-                (ref var_name, Formula::And(ref left, ref right)) => {
-                    let mut disj = Disjunction::new();
-                    disj.add_literal(Literal::new("AND-.".to_string(), false));
-                    conj.add_disjunction(disj);
-                },
-                (ref var_name, Formula::Or(ref left, ref right)) => {
-                    let mut disj = Disjunction::new();
-                    disj.add_literal(Literal::new("OR-.".to_string(), false));
-                    conj.add_disjunction(disj);
-                },
-                (ref var_name, Formula::Constant(ref val)) => {
-                    let mut disj = Disjunction::new();
-                    disj.add_literal(Literal::new("CONST-.".to_string(), false));
-                    conj.add_disjunction(disj);
-                },
-                (ref var_name, Formula::Var(ref name)) => {
-                    let mut disj = Disjunction::new();
-                    disj.add_literal(Literal::new("NAME-.".to_string(), false));
-                    conj.add_disjunction(disj);
+                (ref _var_name, Formula::Var(ref _name)) => {
+                    // do nothing
+                    // TODO: have to decide if empty disj/conj are true or false
                 }
             }
         }
