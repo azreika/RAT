@@ -1,5 +1,7 @@
 use std::fmt;
 
+/// Represents the overall conjunction in a CNF.
+/// Composed of a set of disjunctions.
 pub struct Conjunction {
     disjunctions: Vec<Disjunction>,
 }
@@ -16,6 +18,22 @@ impl Conjunction {
     }
 }
 
+impl fmt::Display for Conjunction {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str("(")?;
+        let mut delim = "";
+        for disjunction in self.disjunctions.iter() {
+            f.write_str(delim)?;
+            write!(f, "{}", disjunction)?;
+            delim = " ∧ ";
+        }
+        f.write_str(")")?;
+        Ok(())
+    }
+}
+
+/// Represents the inner disjunction-sets in a CNF.
+/// Composed of a set of literals.
 pub struct Disjunction {
     literals: Vec<Literal>,
 }
@@ -32,6 +50,22 @@ impl Disjunction {
     }
 }
 
+impl fmt::Display for Disjunction {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str("(")?;
+        let mut delim = "";
+        for literal in self.literals.iter() {
+            f.write_str(delim)?;
+            write!(f, "{}", literal)?;
+            delim = " ∨ ";
+        }
+        f.write_str(")")?;
+        Ok(())
+    }
+}
+
+/// Represents the literals in a disjunction within a CNF.
+/// Can be either a variable or its negation.
 pub struct Literal {
     name: String,
     negated: bool,
@@ -46,35 +80,7 @@ impl Literal {
     }
 }
 
-impl fmt::Debug for Conjunction {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str("(")?;
-        let mut delim = "";
-        for disjunction in self.disjunctions.iter() {
-            f.write_str(delim)?;
-            write!(f, "{:?}", disjunction)?;
-            delim = " ∧ ";
-        }
-        f.write_str(")")?;
-        Ok(())
-    }
-}
-
-impl fmt::Debug for Disjunction {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str("(")?;
-        let mut delim = "";
-        for literal in self.literals.iter() {
-            f.write_str(delim)?;
-            write!(f, "{:?}", literal)?;
-            delim = " ∨ ";
-        }
-        f.write_str(")")?;
-        Ok(())
-    }
-}
-
-impl fmt::Debug for Literal {
+impl fmt::Display for Literal {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if self.negated {
             f.write_str("¬")?;
