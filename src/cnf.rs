@@ -2,6 +2,7 @@ use std::fmt;
 
 /// Represents the overall conjunction in a CNF.
 /// Composed of a set of disjunctions.
+#[derive(Clone)]
 pub struct Conjunction {
     disjunctions: Vec<Disjunction>,
 }
@@ -15,6 +16,10 @@ impl Conjunction {
 
     pub fn add_disjunction(&mut self, disjunction: Disjunction) {
         self.disjunctions.push(disjunction);
+    }
+
+    pub fn get_disjunctions(&self) -> &Vec<Disjunction> {
+        &self.disjunctions
     }
 }
 
@@ -34,6 +39,7 @@ impl fmt::Display for Conjunction {
 
 /// Represents the inner disjunction-sets in a CNF.
 /// Composed of a set of literals.
+#[derive(Clone)]
 pub struct Disjunction {
     literals: Vec<Literal>,
 }
@@ -47,6 +53,10 @@ impl Disjunction {
 
     pub fn add_literal(&mut self, literal: Literal) {
         self.literals.push(literal);
+    }
+
+    pub fn get_literals(&self) -> &Vec<Literal> {
+        &self.literals
     }
 }
 
@@ -66,6 +76,7 @@ impl fmt::Display for Disjunction {
 
 /// Represents the literals in a disjunction within a CNF.
 /// Can be either a variable or its negation.
+#[derive(Clone)]
 pub struct Literal {
     name: String,
     negated: bool,
@@ -77,6 +88,14 @@ impl Literal {
             name: name,
             negated: negated,
         }
+    }
+
+    pub fn get_name(&self) -> &String {
+        &self.name
+    }
+
+    pub fn is_negated(&self) -> bool {
+        self.negated
     }
 }
 
