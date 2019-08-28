@@ -1,4 +1,5 @@
 use std::fmt;
+use std::collections::HashMap;
 
 /// Represents the overall conjunction in a CNF.
 /// Composed of a set of disjunctions.
@@ -20,6 +21,50 @@ impl Conjunction {
 
     pub fn get_disjunctions(&self) -> &Vec<Disjunction> {
         &self.disjunctions
+    }
+
+    pub fn simplify(&self, assignments: &HashMap<String, bool>) -> Conjunction {
+        let mut conjunction = Conjunction::new();
+        for disjunction in self.disjunctions.iter() {
+            let mut new_disj = Disjunction::new();
+            let mut satisfied = false;
+            for literal in disjunction.get_literals() {
+                let name = literal.get_name();
+                if assignments.contains_key(name) {
+                    if *assignments.get(name).unwrap() {
+                        if !literal.is_negated() {
+                            satisfied = true;
+                            break;
+                        }
+                    } else {
+                        if literal.is_negated() {
+                            satisfied = true;
+                            break;
+                        }
+                    }
+                } else {
+                    new_disj.add_literal((*literal).clone());
+                }
+            }
+            if satisfied {
+                continue;
+            }
+            conjunction.add_disjunction(new_disj);
+        }
+        conjunction
+    }
+
+    pub fn is_trivially_false(&self) -> bool {
+        for disjunction in self.disjunctions.iter() {
+            if disjunction.is_trivially_false() {
+                return true;
+            }
+        }
+        false
+    }
+
+    pub fn is_trivially_true(&self) -> bool {
+        self.disjunctions.is_empty()
     }
 }
 
@@ -57,6 +102,10 @@ impl Disjunction {
 
     pub fn get_literals(&self) -> &Vec<Literal> {
         &self.literals
+    }
+
+    pub fn is_trivially_false(&self) -> bool {
+        self.literals.is_empty()
     }
 }
 
