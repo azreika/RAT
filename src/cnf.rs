@@ -23,47 +23,58 @@ impl Conjunction {
         &self.disjunctions
     }
 
+    /// Simplifies a conjunction given a set of variable assignments.
     pub fn simplify(&self, assignments: &HashMap<String, bool>) -> Conjunction {
+        // Create a new conjunction containing the simplified disjunctions
         let mut conjunction = Conjunction::new();
+
+        // Simplify each conjunction
         for disjunction in self.disjunctions.iter() {
             let mut new_disj = Disjunction::new();
             let mut satisfied = false;
+
             for literal in disjunction.get_literals() {
                 let name = literal.get_name();
                 if assignments.contains_key(name) {
+                    // Variable is assigned a value, and so is consumed
                     if *assignments.get(name).unwrap() {
+                        // Variable is assigned to true
                         if !literal.is_negated() {
                             satisfied = true;
                             break;
                         }
                     } else {
+                        // Variable is assigned to false
                         if literal.is_negated() {
                             satisfied = true;
                             break;
                         }
                     }
                 } else {
+                    // Variable not yet assigned, so keep it in
                     new_disj.add_literal((*literal).clone());
                 }
             }
-            if satisfied {
-                continue;
+
+            if !satisfied {
+                // Disjunction not yet satisfied, so keep it in
+                conjunction.add_disjunction(new_disj);
             }
-            conjunction.add_disjunction(new_disj);
         }
+
+        // Conjunction simplified!
         conjunction
     }
 
+    /// Checks if the conjunction is trivially false.
     pub fn is_trivially_false(&self) -> bool {
-        for disjunction in self.disjunctions.iter() {
-            if disjunction.is_trivially_false() {
-                return true;
-            }
-        }
-        false
+        // Conjunction is immediately false if any disjunctions are false
+        self.disjunctions.iter().any(|disjunction| disjunction.is_trivially_false())
     }
 
+    /// Checks if the conjunction is trivially true.
     pub fn is_trivially_true(&self) -> bool {
+        // Conjunction is immediately true if it contains no dijsunctions
         self.disjunctions.is_empty()
     }
 }
@@ -104,7 +115,9 @@ impl Disjunction {
         &self.literals
     }
 
+    /// Checks if the disjunction is trivially false.
     pub fn is_trivially_false(&self) -> bool {
+        // Empty disjunctions are trivially false.
         self.literals.is_empty()
     }
 }
